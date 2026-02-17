@@ -1,0 +1,6 @@
+Package: Mazhaicev
+Version: 1.0
+Architecture: amd64
+Depends: g++, make, libc6
+Maintainer: Vadim
+Description: Kapibara
