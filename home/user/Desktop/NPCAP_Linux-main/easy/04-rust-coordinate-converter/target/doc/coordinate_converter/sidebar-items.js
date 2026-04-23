@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["CoordinateError","Hemisphere"],"struct":["UTM","WGS84"]};

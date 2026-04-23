@@ -1,0 +1,94 @@
+{
+  "total_records": 51,
+  "flight_duration_seconds": 50.0,
+  "statistics": {
+    "relative_alt": {
+      "mean": 37.40196078431372,
+      "median": 50.0,
+      "std": 17.04993243618377,
+      "min": 0.0,
+      "max": 50.0
+    },
+    "groundspeed": {
+      "mean": 7.074509803921569,
+      "median": 7.5,
+      "std": 2.4293079786025404,
+      "min": 0.0,
+      "max": 10.0
+    },
+    "battery_voltage": {
+      "mean": 12.472549019607843,
+      "median": 12.47,
+      "std": 0.07437319778670011,
+      "min": 12.35,
+      "max": 12.6
+    },
+    "battery_remaining": {
+      "mean": 91.66666666666667,
+      "median": 92.0,
+      "std": 4.970580113695651,
+      "min": 83.0,
+      "max": 100.0
+    },
+    "satellites": {
+      "mean": 12.117647058823529,
+      "median": 12.0,
+      "std": 1.4784729801187362,
+      "min": 5.0,
+      "max": 14.0
+    },
+    "roll": {
+      "mean": 0.0013725490196078432,
+      "median": 0.01,
+      "std": 0.04049788181340536,
+      "min": -0.2,
+      "max": 0.05
+    },
+    "pitch": {
+      "mean": 0.025490196078431372,
+      "median": 0.01,
+      "std": 0.058320278651261465,
+      "min": 0.0,
+      "max": 0.3
+    }
+  },
+  "anomalies": {
+    "altitude": [
+      {
+        "timestamp": 1709640030.0,
+        "old_value": 50.0,
+        "new_value": 35.0,
+        "change": -15.0
+      },
+      {
+        "timestamp": 1709640031.0,
+        "old_value": 35.0,
+        "new_value": 20.0,
+        "change": -15.0
+      },
+      {
+        "timestamp": 1709640032.0,
+        "old_value": 20.0,
+        "new_value": 5.0,
+        "change": -15.0
+      }
+    ],
+    "gps": [
+      {
+        "timestamp": 1709640031,
+        "satellites": 5,
+        "fix_type": 2
+      }
+    ],
+    "battery": [],
+    "speed": [],
+    "attitude": []
+  },
+  "anomaly_counts": {
+    "altitude": 3,
+    "gps": 1,
+    "battery": 0,
+    "speed": 0,
+    "attitude": 0
+  }
+}

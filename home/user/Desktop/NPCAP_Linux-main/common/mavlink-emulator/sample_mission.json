@@ -1,0 +1,36 @@
+{
+  "name": "Sample Mission",
+  "description": "Тестовая миссия для проверки эмулятора",
+  "waypoints": [
+    {
+      "lat": 55.7560,
+      "lon": 37.6180,
+      "alt": 50,
+      "command": "WAYPOINT"
+    },
+    {
+      "lat": 55.7575,
+      "lon": 37.6200,
+      "alt": 100,
+      "command": "WAYPOINT"
+    },
+    {
+      "lat": 55.7590,
+      "lon": 37.6175,
+      "alt": 75,
+      "command": "WAYPOINT"
+    },
+    {
+      "lat": 55.7580,
+      "lon": 37.6150,
+      "alt": 50,
+      "command": "WAYPOINT"
+    },
+    {
+      "lat": 55.7558,
+      "lon": 37.6173,
+      "alt": 0,
+      "command": "LAND"
+    }
+  ]
+}
