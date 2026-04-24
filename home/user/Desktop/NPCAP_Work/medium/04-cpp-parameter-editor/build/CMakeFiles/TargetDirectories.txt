@@ -1,0 +1,5 @@
+/home/user/Desktop/NPCAP_Work/medium/04-cpp-parameter-editor/build/CMakeFiles/parameter-editor.dir
+/home/user/Desktop/NPCAP_Work/medium/04-cpp-parameter-editor/build/CMakeFiles/edit_cache.dir
+/home/user/Desktop/NPCAP_Work/medium/04-cpp-parameter-editor/build/CMakeFiles/rebuild_cache.dir
+/home/user/Desktop/NPCAP_Work/medium/04-cpp-parameter-editor/build/CMakeFiles/parameter-editor_autogen_timestamp_deps.dir
+/home/user/Desktop/NPCAP_Work/medium/04-cpp-parameter-editor/build/CMakeFiles/parameter-editor_autogen.dir

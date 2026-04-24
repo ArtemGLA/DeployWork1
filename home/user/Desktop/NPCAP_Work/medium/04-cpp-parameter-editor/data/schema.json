@@ -1,0 +1,161 @@
+{
+  "version": "1.0",
+  "vehicle": "ArduCopter",
+  "groups": [
+    {
+      "name": "PID",
+      "description": "PID Controller Settings",
+      "subgroups": [
+        {
+          "name": "Roll",
+          "parameters": [
+            {
+              "name": "ATC_RAT_RLL_P",
+              "displayName": "Roll Rate P",
+              "description": "Roll axis rate controller P gain. Converts roll rate error to motor output.",
+              "type": "float",
+              "default": 0.135,
+              "min": 0.01,
+              "max": 0.5,
+              "increment": 0.005,
+              "units": ""
+            },
+            {
+              "name": "ATC_RAT_RLL_I",
+              "displayName": "Roll Rate I",
+              "description": "Roll axis rate controller I gain. Corrects long-term error.",
+              "type": "float",
+              "default": 0.135,
+              "min": 0.0,
+              "max": 0.5,
+              "increment": 0.01,
+              "units": ""
+            },
+            {
+              "name": "ATC_RAT_RLL_D",
+              "displayName": "Roll Rate D",
+              "description": "Roll axis rate controller D gain. Dampens oscillations.",
+              "type": "float",
+              "default": 0.0036,
+              "min": 0.0,
+              "max": 0.02,
+              "increment": 0.0001,
+              "units": ""
+            }
+          ]
+        },
+        {
+          "name": "Pitch",
+          "parameters": [
+            {
+              "name": "ATC_RAT_PIT_P",
+              "displayName": "Pitch Rate P",
+              "description": "Pitch axis rate controller P gain.",
+              "type": "float",
+              "default": 0.135,
+              "min": 0.01,
+              "max": 0.5,
+              "increment": 0.005,
+              "units": ""
+            },
+            {
+              "name": "ATC_RAT_PIT_I",
+              "displayName": "Pitch Rate I",
+              "description": "Pitch axis rate controller I gain.",
+              "type": "float",
+              "default": 0.135,
+              "min": 0.0,
+              "max": 0.5,
+              "increment": 0.01,
+              "units": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Limits",
+      "description": "Flight Limits",
+      "subgroups": [
+        {
+          "name": "Speed",
+          "parameters": [
+            {
+              "name": "WPNAV_SPEED",
+              "displayName": "Waypoint Speed",
+              "description": "Maximum horizontal speed during waypoint navigation.",
+              "type": "float",
+              "default": 500,
+              "min": 100,
+              "max": 2000,
+              "increment": 50,
+              "units": "cm/s"
+            },
+            {
+              "name": "WPNAV_SPEED_DN",
+              "displayName": "Descent Speed",
+              "description": "Maximum descent speed during waypoint navigation.",
+              "type": "float",
+              "default": 150,
+              "min": 50,
+              "max": 500,
+              "increment": 10,
+              "units": "cm/s"
+            }
+          ]
+        },
+        {
+          "name": "Altitude",
+          "parameters": [
+            {
+              "name": "FENCE_ALT_MAX",
+              "displayName": "Max Altitude",
+              "description": "Maximum altitude above home before triggering fence.",
+              "type": "float",
+              "default": 100,
+              "min": 10,
+              "max": 1000,
+              "increment": 10,
+              "units": "m"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Failsafe",
+      "description": "Failsafe Settings",
+      "subgroups": [
+        {
+          "name": "Battery",
+          "parameters": [
+            {
+              "name": "BATT_LOW_VOLT",
+              "displayName": "Low Battery Voltage",
+              "description": "Voltage at which to trigger low battery failsafe.",
+              "type": "float",
+              "default": 10.5,
+              "min": 0,
+              "max": 50,
+              "increment": 0.1,
+              "units": "V"
+            },
+            {
+              "name": "BATT_FS_LOW_ACT",
+              "displayName": "Low Battery Action",
+              "description": "Action to perform when low battery voltage detected.",
+              "type": "enum",
+              "default": 0,
+              "values": [
+                {"value": 0, "name": "None", "description": "No action"},
+                {"value": 1, "name": "Land", "description": "Land immediately"},
+                {"value": 2, "name": "RTL", "description": "Return to Launch"},
+                {"value": 3, "name": "SmartRTL", "description": "Smart Return to Launch"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
