@@ -1,0 +1,22 @@
+{
+  "name": "Test Mission",
+  "description": "Простая тестовая миссия для проверки симулятора",
+  "home": {
+    "lat": 55.7558,
+    "lon": 37.6173,
+    "alt": 150
+  },
+  "waypoints": [
+    {"lat": 55.7565, "lon": 37.6180, "alt": 50, "speed": 10},
+    {"lat": 55.7575, "lon": 37.6200, "alt": 100, "speed": 15},
+    {"lat": 55.7580, "lon": 37.6180, "alt": 75, "speed": 12},
+    {"lat": 55.7570, "lon": 37.6160, "alt": 50, "speed": 10},
+    {"lat": 55.7558, "lon": 37.6173, "alt": 0, "speed": 5}
+  ],
+  "settings": {
+    "takeoff_alt": 20,
+    "rtl_alt": 30,
+    "max_speed": 15,
+    "wp_radius": 5
+  }
+}
