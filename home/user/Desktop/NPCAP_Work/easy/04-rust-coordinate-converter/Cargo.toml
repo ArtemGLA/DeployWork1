@@ -1,0 +1,9 @@
+[package]
+name = "coordinate-converter"
+version = "0.1.0"
+edition = "2021"
+description = "WGS84/UTM coordinate conversion library"
+
+[dependencies]
+
+[dev-dependencies]

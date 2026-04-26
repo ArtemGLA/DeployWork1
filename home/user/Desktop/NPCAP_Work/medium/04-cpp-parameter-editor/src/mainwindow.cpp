@@ -145,6 +145,7 @@ void MainWindow::loadSchema()
     
     m_schema = ParameterSchema::load(filepath);
     populateCategories();
+    populateModelParameters();
     
     statusBar()->showMessage("Schema loaded: " + filepath);
 }
@@ -163,6 +164,20 @@ void MainWindow::populateCategories()
     }
 }
 
+// Заполнение списка параметров модели
+void MainWindow::populateModelParameters()
+{     
+    for (const auto& group : m_schema.groups) {
+        auto* groupItem = new QStandardItem(group.name);
+        for (const auto& subgroup : group.subgroups) {
+            auto* subItem = new QStandardItem(subgroup.name);
+            for (auto& param : subgroup.parameters) {
+                m_parameterModel->m_parameters.append(param);
+            }
+        }
+    }
+}
+
 void MainWindow::onCategorySelected(const QModelIndex &index) {
     if (!index.isValid()) return;
     
@@ -171,21 +186,25 @@ void MainWindow::onCategorySelected(const QModelIndex &index) {
     QString groupItemName = index.parent().data().toString();  // "PID"
     
     
-    // Ищем и выводим параметры
+    // Ищем subgroup для отображения description
     for (auto& group : m_schema.groups) {
         if (group.name == groupItemName) {
             for (auto& subgroup : group.subgroups) {
                 if (subgroup.name == subItemName) {
                     m_parameterModel->m_subgroupCurrent = subgroup;
-                    m_parameterModel->clear();
-                    for (auto& param : subgroup.parameters) {
-                                m_parameterModel->addValue(param.displayName, param.defaultValue);
-                    }
-                    return;
                 }
             }
         }
     }
+
+    // Заполняем Model из списка 
+    m_parameterModel->clear();
+    for (auto& param : m_parameterModel->m_parameters) {
+    if ((param.group == groupItemName) && (param.subgroup == subItemName)) {
+            m_parameterModel->addValue(param.displayName, param.value, param.defaultValue);
+        }
+    }
+    return;
 }
 
 void MainWindow::onParameterSelected(const QModelIndex &index) {
@@ -204,8 +223,6 @@ void MainWindow::onParameterSelected(const QModelIndex &index) {
             updateDescription(param);
         }
     }
-
-    qDebug() << value;
 }
 
 void MainWindow::onSearchTextChanged(const QString& text)

@@ -47,6 +47,9 @@ private:
     /// Обновить описание параметра.
     void updateDescription(const Parameter& param);
 
+    /// Заполнение списка параметров модели
+    void populateModelParameters();
+
     // Data
     ParameterSchema m_schema;
     QMap<QString, QVariant> m_currentValues;

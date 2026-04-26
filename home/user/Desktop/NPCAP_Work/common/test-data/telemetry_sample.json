@@ -1,0 +1,40 @@
+{
+  "timestamp": 1709640000,
+  "system_id": 1,
+  "component_id": 1,
+  "position": {
+    "lat": 55.7558,
+    "lon": 37.6173,
+    "alt": 150.0,
+    "relative_alt": 50.0
+  },
+  "velocity": {
+    "vx": 5.2,
+    "vy": 3.1,
+    "vz": -0.5,
+    "groundspeed": 6.1,
+    "airspeed": 6.3
+  },
+  "attitude": {
+    "roll": 0.02,
+    "pitch": 0.01,
+    "yaw": 1.57,
+    "heading": 90
+  },
+  "battery": {
+    "voltage": 12.5,
+    "current": 5.2,
+    "remaining": 85
+  },
+  "gps": {
+    "fix_type": 3,
+    "satellites": 12,
+    "hdop": 1.0,
+    "vdop": 1.2
+  },
+  "status": {
+    "armed": true,
+    "mode": "AUTO",
+    "state": "ACTIVE"
+  }
+}

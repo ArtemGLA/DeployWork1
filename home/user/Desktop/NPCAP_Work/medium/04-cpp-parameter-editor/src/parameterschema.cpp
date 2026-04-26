@@ -55,6 +55,7 @@ ParameterSchema ParameterSchema::load(const QString& filepath)
 
                                 // Числовые значения
                 parameter.defaultValue = parameterObject["default"].toVariant();
+                parameter.value = parameterObject["default"].toVariant();
                 parameter.minValue = parameterObject["min"].toVariant();
                 parameter.maxValue = parameterObject["max"].toVariant();
                 parameter.increment = parameterObject["increment"].toDouble();

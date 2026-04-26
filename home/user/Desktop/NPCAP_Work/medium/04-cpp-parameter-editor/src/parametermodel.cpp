@@ -2,15 +2,17 @@
 #include <QList>
 #include <QVariant>
 #include <QDebug>
+#include <QColor>
+#include <QBrush>
 
 ParameterModel::ParameterModel(QObject *parent) : QAbstractTableModel(parent) {
     // Заполнение данных
 
-    m_values = {
-        {"Tom", 10},
-        {"Bob", 20},
-        {"Sam", 30}
-    };
+m_values = {
+    {"Tom", {10, 5}},     // [0]=текущее, [1]=дефолт
+    {"Bob", {20, 15}},
+    {"Sam", {30, 30}}
+};
 }
 
 int ParameterModel::rowCount(const QModelIndex &parent) const {
@@ -41,6 +43,25 @@ QVariant ParameterModel::data(const QModelIndex &index, int role) const {
         return QVariant();
     }
 
+    if (role == Qt::BackgroundRole) {
+        if (index.column() == 1) { // Колонка Value
+            QString paramName = m_values.keys()[index.row()];
+            QVariant currentValue = m_values[paramName][0];
+            
+            // Ищем дефолтное значение параметра
+            for (const auto& param : m_parameters) {
+                if (param.displayName == paramName) {
+                    if (currentValue != param.defaultValue) {
+                        // Возвращаем красный цвет для измененных значений
+                        return QBrush(QColor(0, 255, 200)); // Светло-красный
+                    }
+                    break;
+                }
+            }
+        }
+        return QVariant(); // Стандартный цвет
+    }
+
     if (!index.isValid() || (role != Qt::DisplayRole && role != Qt::EditRole))
         return QVariant();
 
@@ -50,11 +71,11 @@ QVariant ParameterModel::data(const QModelIndex &index, int role) const {
 
     else if (index.column() == 1) {
 
-        return m_values.values()[index.row()];
+        return m_values.values()[index.row()][0];
     }
 
     else if (index.column() == 2 && role != Qt::EditRole)
-        return m_values.values()[index.row()];
+        return m_values.values()[index.row()][1];
 }
 
 QVariant ParameterModel::headerData(int section, Qt::Orientation orientation, int role) const {
@@ -66,12 +87,12 @@ QVariant ParameterModel::headerData(int section, Qt::Orientation orientation, in
     if (section == 2) return "Default";
 }
 
-void ParameterModel::addValue(const QString& key, const QVariant& value)
+void ParameterModel::addValue(const QString& key, const QVariant& value, const QVariant& defaultValue)
 {
     int newRow = m_values.size(); // Индекс новой строки
     
     beginInsertRows(QModelIndex(), newRow, newRow);
-    m_values.insert(key, value);
+    m_values.insert(key, {value, defaultValue});
     endInsertRows();
 }
 
@@ -107,17 +128,25 @@ bool ParameterModel::setData(const QModelIndex &index, const QVariant &value, in
         bool ok;
         double newAge = value.toDouble(&ok);
         
-        if (ok && newAge >= 0 && newAge <= 150) {
+        if (ok) {
             int row = index.row();
             
             // Получаем ключ по индексу строки
             QString key = m_values.keys()[row];
             
             // Обновляем значение в map по ключу
-            m_values[key] = newAge;  // ✅ ПРАВИЛЬНО
+            m_values[key][0] = newAge;  // ✅ ПРАВИЛЬНО
             
             // Уведомляем об изменении
             emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
+//TODO Переделать в правильный поиск индексов
+            for (auto& param : m_parameters)
+            {
+                if (param.displayName == key)
+                {
+                    param.value = m_values[key][0];
+                }
+            }
             return true;
         }
     }

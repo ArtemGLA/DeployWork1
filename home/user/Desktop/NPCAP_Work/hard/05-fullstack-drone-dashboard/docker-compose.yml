@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - MAVLINK_PORT=14550
+    networks:
+      - drone-network
+  
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - drone-network
+  
+  emulator:
+    build:
+      context: ../common/mavlink-emulator
+      dockerfile: Dockerfile
+    command: python emulator.py --auto-arm --port 14550 --host 0.0.0.0
+    networks:
+      - drone-network
+
+networks:
+  drone-network:
+    driver: bridge

@@ -31,6 +31,7 @@ struct Parameter {
     
     ParameterType type = ParameterType::Float;
     QVariant defaultValue;
+    QVariant value;
     QVariant minValue;
     QVariant maxValue;
     double increment = 0.0;

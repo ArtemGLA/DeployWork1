@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  sitl:
+    image: ardupilot/sitl-copter:latest
+    container_name: ardupilot-sitl
+    ports:
+      - "5760:5760"
+      - "5501:5501"
+    environment:
+      - VEHICLE=ArduCopter
+      - SPEEDUP=1
+    restart: unless-stopped

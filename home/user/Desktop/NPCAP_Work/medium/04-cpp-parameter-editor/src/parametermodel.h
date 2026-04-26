@@ -21,14 +21,14 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const;
-    void addValue(const QString& key, const QVariant& value);
+    void addValue(const QString& key, const QVariant& value, const QVariant& defaultValue);
     bool setData(const QModelIndex &index, const QVariant &value, int role);
     void clear();
 
     QList<Parameter> m_parameters;
     ParameterSubgroup m_subgroupCurrent;    //Для Description
     Parameter m_parameterCurent;    //Для Description
-    QMap<QString, QVariant> m_values;
+    QMap<QString, QList<QVariant>> m_values;
 };
 
 #endif // PARAMETERMODEL_H

@@ -23,6 +23,10 @@ QWidget* ParameterDelegate::createEditor(QWidget *parent, const QStyleOptionView
     } else {
         spinBox->setRange(-999999, 999999);  // Дефолтный диапазон
     }
+
+    spinBox->setSingleStep(0.01);
+
+    spinBox->setDecimals(3); 
     
     return spinBox;
 }
