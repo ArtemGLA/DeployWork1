@@ -1,0 +1,3 @@
+Requirement already satisfied: pymavlink in /home/user/Desktop/NPCAP_Work/easy/01-python-mavlink-parser/venv/lib/python3.12/site-packages (2.4.49)
+Requirement already satisfied: lxml in /home/user/Desktop/NPCAP_Work/easy/01-python-mavlink-parser/venv/lib/python3.12/site-packages (from pymavlink) (6.0.2)
+Requirement already satisfied: fastcrc in /home/user/Desktop/NPCAP_Work/easy/01-python-mavlink-parser/venv/lib/python3.12/site-packages (from pymavlink) (0.3.5)

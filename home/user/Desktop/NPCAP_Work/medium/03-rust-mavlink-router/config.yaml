@@ -1,0 +1,45 @@
+# Пример конфигурации MAVLink Router
+
+inputs:
+  - name: drone1
+    type: udp
+    bind: "0.0.0.0:14550"   # было 14550
+    system_id: 1
+    
+  - name: drone2
+    type: udp
+    bind: "0.0.0.0:14551"   # было 14551
+    system_id: 2
+
+outputs:
+  - name: gcs1
+    type: udp
+    target: "127.0.0.1:14600"
+    
+  - name: gcs2
+    type: udp
+    target: "127.0.0.1:14601"
+    
+  - name: logger
+    type: udp
+    target: "127.0.0.1:14700"
+
+routes:
+  # Все данные от drone1 -> gcs1 и gcs2
+  - from: drone1
+    to: [gcs1, gcs2]
+    filter:
+      message_ids: [0, 1, 24, 30, 33, 74]
+      
+  # Только позиция от drone2 -> gcs1
+  - from: drone2
+    to: [gcs1]
+    filter:
+      message_ids: [0, 33]  # heartbeat + global_position_int
+      
+  # Всё от обоих дронов -> logger (без фильтра)
+  - from: drone1
+    to: [logger]
+    
+  - from: drone2
+    to: [logger]

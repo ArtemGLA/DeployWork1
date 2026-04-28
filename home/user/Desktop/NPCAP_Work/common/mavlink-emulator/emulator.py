@@ -428,24 +428,14 @@ class UDPServer:
         if self.sock:
             self.sock.close()
 
-
 async def run_emulator(args):
-    """Запуск эмулятора."""
     emulator = DroneEmulator(system_id=args.system_id)
     emulator.set_position(args.lat, args.lon, 0)
-    
-    server = UDPServer(host=args.host, port=args.port)
-    server.start()
-    
-    print(f"MAVLink Emulator started on {args.host}:{args.port}")
-    print(f"System ID: {args.system_id}")
-    print(f"Initial position: {args.lat}, {args.lon}")
-    print("Press Ctrl+C to stop")
-    
+
     if args.auto_arm:
         emulator.arm()
         print("Auto-armed")
-    
+
     if args.mission_file:
         with open(args.mission_file) as f:
             mission = json.load(f)
@@ -455,35 +445,59 @@ async def run_emulator(args):
         if args.auto_start:
             emulator.start_mission()
             print("Mission started")
-    
+
     last_time = time.time()
-    
+
+    # Режим ТОЛЬКО ОТПРАВКИ (без привязки к порту)
+    if args.send_only:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        dest_addr = (args.host, args.port)
+        print(f"Emulator sending telemetry to {dest_addr} (no incoming commands)")
+        try:
+            while True:
+                current_time = time.time()
+                dt = current_time - last_time
+                last_time = current_time
+                emulator.update_physics(dt)
+                for msg in emulator.get_telemetry_messages():
+                    sock.sendto(msg, dest_addr)
+                await asyncio.sleep(1.0 / args.rate)
+        except KeyboardInterrupt:
+            print("\nStopping...")
+        finally:
+            sock.close()
+        return
+
+    # Обычный режим (сервер)
+    server = UDPServer(host=args.host, port=args.port)
+    server.start()
+    print(f"MAVLink Emulator started on {args.host}:{args.port}")
+    print(f"System ID: {args.system_id}")
+    print(f"Initial position: {args.lat}, {args.lon}")
+    print("Press Ctrl+C to stop")
+
     try:
         while True:
             current_time = time.time()
             dt = current_time - last_time
             last_time = current_time
-            
-            # Обновление физики
             emulator.update_physics(dt)
-            
-            # Приём входящих сообщений
+
             while True:
                 result = server.receive()
                 if result is None:
                     break
                 data, addr = result
-                # Здесь можно добавить обработку входящих команд
-            
-            # Отправка телеметрии
+                # обработка команд
+
             for msg in emulator.get_telemetry_messages():
                 server.send_to_all(msg)
-            
+
             await asyncio.sleep(1.0 / args.rate)
     except KeyboardInterrupt:
         print("\nStopping emulator...")
     finally:
-        server.close()
+        server.close()  
 
 
 def main():
@@ -493,6 +507,8 @@ def main():
     
     parser.add_argument('--host', default='127.0.0.1',
                         help='IP адрес для прослушивания (default: 127.0.0.1)')
+    parser.add_argument('--send-only', action='store_true',
+                    help='Только отправка телеметрии (не слушать входящие команды)')
     parser.add_argument('--port', type=int, default=14550,
                         help='UDP порт (default: 14550)')
     parser.add_argument('--system-id', type=int, default=1,
