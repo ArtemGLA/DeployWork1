@@ -24,6 +24,9 @@ public:
     // Обновление размеров редактора под размер ячейки
     void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option,
                              const QModelIndex &index) const override;
+
+    // Высчитывает количество чисел после запятой при прокрутке
+    int calculateDecimals(double value) const;  // Добавьте const
 };
 
 #endif // DELEGATE_H

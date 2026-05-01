@@ -9,9 +9,6 @@ ParameterModel::ParameterModel(QObject *parent) : QAbstractTableModel(parent) {
     // Заполнение данных
 
 m_values = {
-    {"Tom", {10, 5}},     // [0]=текущее, [1]=дефолт
-    {"Bob", {20, 15}},
-    {"Sam", {30, 30}}
 };
 }
 
@@ -58,6 +55,37 @@ QVariant ParameterModel::data(const QModelIndex &index, int role) const {
         }
         return QVariant();
     }
+
+    // Поиск defaultValue
+    // TODO: переделать param.displayName == paramName
+    if (role == ParamDefault) {
+        if (index.column() == 1) {  // Только для колонки Value
+            QString paramName = m_values.keys()[index.row()];
+            // Ищем параметр в m_subgroupCurrent
+            for (const auto& param : m_subgroupCurrent.parameters) {
+                if (param.displayName == paramName) {
+                    return param.defaultValue;
+                }
+            }
+        }
+        return QVariant();
+    }
+
+    //Определение типа данных
+    //TODO: переделать param.displayName == paramName
+    if (role == ParamType) {
+        if (index.column() == 1) {  // Только для колонки Value
+            QString paramName = m_values.keys()[index.row()];
+            // Ищем параметр в m_subgroupCurrent
+            for (const auto& param : m_subgroupCurrent.parameters) {
+                if (param.displayName == paramName) {
+                    qDebug() << "w";
+                    return static_cast<int>(param.type);
+                }
+                }
+            }
+        }
+
 
     if (role == Qt::BackgroundRole) {
         if (index.column() == 1) { // Колонка Value
