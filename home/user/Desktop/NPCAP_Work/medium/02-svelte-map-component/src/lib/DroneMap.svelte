@@ -2,253 +2,138 @@
   /**
    * DroneMap - интерактивная карта с отображением дрона и траектории.
    */
-  import DroneMarker from './DroneMarker.svelte';
-  import { onMount, onDestroy } from 'svelte';
-  import type { DronePosition, Mission, MapConfig, WebSocketMessage } from './types';
-  import { DEFAULT_MAP_CONFIG } from './types';
+import { onMount, onDestroy } from 'svelte';
+import type { DronePosition, Mission, MapConfig } from './types';
+import { DEFAULT_MAP_CONFIG } from './types';
+import { DroneWebSocket } from './websocket';           // Вебсокет
   
   export let config: MapConfig = DEFAULT_MAP_CONFIG;
   export let mission: Mission | null = null;
   export let wsUrl: string = 'ws://localhost:8080';
   export let followDrone: boolean = true;
   
-  let L: any = null;
+  let L: any = null; 
   let mapContainer: HTMLDivElement;
   let map: any = null;  // L.Map
-  let droneMarker: any = null;
-  let trajectoryLine: any = null;  // L.Polyline
-  let waypointMarkers: any[] = [];
   
   let dronePosition: DronePosition | null = null;
-  let trajectory: [number, number][] = [];
-  let ws: WebSocket | null = null;
   let connected: boolean = false;
-  let reconnectAttempts = 0;
-  let reconnectTimer: number | null = null;
+  let ws: DroneWebSocket | null = null;
+
+  let droneMarker: any = null;
+  let waypointMarkers: any = null;
+  let trajectory: any = null;
   
-  const MAX_TRAJECTORY_POINTS = 1000;
-
-  var markerOptions = {
-   title: "MyLocation",
-   clickable: true,
-   draggable: true
-}
-
-var latlngs = [
-   [55.7558, 37.6188],
-   [55.7578, 37.6288],
-   [17.000538, 81.804034],
-   [17.686816, 83.218482]
-];
-
   onMount(async () => {
-    // Импорт Leaflet и библиотеки для вращения дрона 
-    L = await import('leaflet');
-    await import('leaflet-rotatedmarker');  
 
-    // AAAA Появляется карта
-    map = L.map(mapContainer).setView(config.center, config.zoom);
-    L.tileLayer(config.tileUrl).addTo(map);
+    // Карта и leaflet
+    await initMap();
 
-  var polyline = L.polyline(latlngs, {color: 'blue'});
-  polyline.addTo(map);
-    
-    // TODO: Создание polyline для траектории
-    // trajectoryLine = L.polyline([], { color: 'blue' }).addTo(map);
-    
-    //Подключение к WebSocket
+    // Импорт компонентов
+    const { DroneMarkerClass, TrajectoryClass, WaypointMarkerClass } = await importComponents();
+  
+    // Инициализация маркера
+    droneMarker = new DroneMarkerClass({
+      target: document.createElement('div'),
+      props: { L, map, center: config.center, position: dronePosition }
+    });
+
+    // Инициализация точек и линий между ними
+    waypointMarkers = new WaypointMarkerClass({
+      target: document.createElement('div'),
+      props: { L, map}
+    });
+
+    // Инициализация траектории
+    trajectory = new TrajectoryClass({
+      target: document.createElement('div'),
+      props: { map, L}
+    });
+
+    // Создание подключения
     connectWebSocket();
+    
   });
   
+  // Уничтожение компонентов
   onDestroy(() => {
-    ws?.close();
+    ws?.close(); 
+
+    droneMarker?.remove();     
+  droneMarker?.$destroy();   
+  
+  trajectory?.clear();     
+  trajectory?.$destroy();
+  
+  waypointMarkers?.clearWaypoints();
+  waypointMarkers?.$destroy();
+
     map?.remove();
   });
 
-  function getColorByAltitude(alt: number): string {
-  const t = Math.min(1, Math.max(0, alt / 100)); // от 0 до 1
-
-  if (t < 0.5) {
-    // Зелёный (0 м) -> Жёлтый (50 м)
-    const r = Math.floor(255 * t * 2);
-    return `rgb(${r}, 255, 0)`;
-  } else {
-    // Жёлтый (50 м) -> Красный (100 м)
-    const g = Math.floor(255 * (1 - (t - 0.5) * 2));
-    return `rgb(255, ${g}, 0)`;
+  async function initMap() {
+    L = await import('leaflet');
+    map = L.map(mapContainer).setView(config.center, config.zoom);
+    L.tileLayer(config.tileUrl).addTo(map);
   }
-}
+
+  async function importComponents() {
+    const [{ default: DroneMarkerClass }, 
+          { default: TrajectoryClass }, 
+          { default: WaypointMarkerClass }] = await Promise.all([
+      import('./DroneMarker.svelte'),
+      import('./Trajectory.svelte'),
+      import('./WaypointMarker.svelte')
+    ]);
+    
+    return { DroneMarkerClass, TrajectoryClass, WaypointMarkerClass };
+  }
   
   function connectWebSocket() {
 
-    if (reconnectTimer) {
-      clearTimeout(reconnectTimer);
-      reconnectTimer = null;
-    }
-    
-    ws = new WebSocket(wsUrl);
-    
-    ws.onopen = () => {
+    // Подключение WebSocket
+    ws = new DroneWebSocket(wsUrl);
+
+    ws.onOpen = () => {
       connected = true;
-      reconnectAttempts = 0;
+      droneMarker.open();
     };
     
-    ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      
-      if (message.type === 'mission') {
-        updateWaypoints(message.data);
-      }
-
-      if (message.type === 'position') {  // <-- Добавить эту секцию
-        updateDronePosition(message.data);
-      }
-
+    ws.onClose = () => {
+      connected = false;
     };
-
-ws.onerror = (error) => {
-  console.error('WebSocket error:', error);
-  connected = false;
-};
-
-ws.onclose = () => {
-  console.log('WebSocket disconnected');
-  connected = false;
-  
-  const baseDelay = 1000;
-  const maxDelay = 30000;
-  const delay = Math.min(baseDelay * Math.pow(2, reconnectAttempts), maxDelay);
-  
-  console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttempts + 1})`);
-  
-  reconnectTimer = window.setTimeout(() => {
-    reconnectAttempts++;
-    connectWebSocket();
-  }, delay);
-};
+    
+    ws.onError = (error) => {
+      console.error('WebSocket error:', error);
+      connected = false;
+      droneMarker.error();
+    };
+    
+    ws.onPosition = (pos: DronePosition) => {
+      updateDronePosition(pos);
+    };
+    
+    ws.onMission = (m: Mission) => {
+      updateWaypoints(m);
+    };
+    
+    ws.connect();
   }
   
   function updateDronePosition(pos: DronePosition) {
-    
-      // 1. Обновить dronePosition
   dronePosition = pos;
-  
-  // 2. Переместить маркер дрона
-  if (droneMarker) {
-    droneMarker.setLatLng([pos.lat, pos.lon]);
-    
-    // 3. Повернуть маркер согласно heading (через CSS)
-  if (droneMarker && pos.heading !== undefined) {
-    droneMarker.setRotationAngle(pos.heading);  // Метод плагина
-  }
+  droneMarker?.setPosition(pos);
+  trajectory?.changeTrajectory(pos);
+
+    if (followDrone && map) {
+      map.setView([pos.lat, pos.lon], map.getZoom());
     }
-  
-// Рисуем цветной отрезок
-  const newPoint: [number, number] = [pos.lat, pos.lon];
-  const lastPoint = trajectory.length > 0 ? trajectory[trajectory.length - 1] : null;
-  let trajectorySegments: any[] = [];
 
-  trajectory.push(newPoint);
-  if (trajectory.length > MAX_TRAJECTORY_POINTS) trajectory = trajectory.slice(-MAX_TRAJECTORY_POINTS);
-
-  if (lastPoint && map) {
-    const color = getColorByAltitude(pos.alt || 0);
-    const segment = L.polyline([lastPoint, newPoint], {
-      color: color,
-      weight: 4,      // Толщина линии
-      opacity: 0.8
-    }).addTo(map);
-    trajectorySegments.push(segment);
-
-    // Ограничиваем количество отрезков
-    while (trajectorySegments.length > MAX_TRAJECTORY_POINTS) {
-      const old = trajectorySegments.shift();
-      if (old) map.removeLayer(old);
-    }
   }
-  
-  // 6. Если followDrone - центрировать карту
-  if (followDrone && map) {
-    map.setView([pos.lat, pos.lon], map.getZoom());
-  }
-  }
-  
-let waypointLine: any = null;  // <-- Добавить сюда
 
 function updateWaypoints(m: Mission) {
-  // Удаляем старые маркеры
-  waypointMarkers.forEach(marker => map.removeLayer(marker));
-  waypointMarkers = [];
-  
-  // Удаляем старые линии
-  if (waypointLine) {
-    map.removeLayer(waypointLine);
-    waypointLine = null;
-  }
-  
-  // Создаем маркеры и собираем координаты
-  const points: [number, number][] = [];
-  
-  m.waypoints.forEach((wp, index) => {
-
-    let bgColor = '#0078ff';  // синий для waypoint по умолчанию
-    let symbol = `${index + 1}`;  // цифра для waypoint
-    let borderColor = 'white';
-    
-    if (wp.type === 'takeoff') {
-      bgColor = '#9b59b6';  // фиолетовый
-      symbol = 'H';  // буква H
-      borderColor = '#ffd700';  // золотая обводка
-    } else if (wp.type === 'land') {
-      bgColor = '#e91e63';  // розовый
-      symbol = 'H';  // буква H
-      borderColor = '#ffd700';  // золотая обводка
-    }
-    
-    const customIcon = L.divIcon({
-      className: 'custom-waypoint-marker',
-      html: `<div style="
-        background-color: ${bgColor};
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-        font-size: ${wp.type === 'waypoint' ? '14px' : '18px'};
-        border: 2px solid ${borderColor};
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      ">${symbol}</div>`,
-      iconSize: [32, 32],
-      popupAnchor: [0, -16]
-    });
-
-const marker = L.marker([wp.lat, wp.lon], { icon: customIcon })
-  .bindPopup(`Waypoint ${index + 1}`)
-  .addTo(map);
-    waypointMarkers.push(marker);
-    points.push([wp.lat, wp.lon]);
-  });
-  
-  // Соединяем каждую точку с каждой
-  if (points.length > 1) {
-    const allLines: any[] = [];
-    
-    for (let i = 0; i < points.length; i++) {
-      for (let j = i + 1; j < points.length; j++) {
-        const line = L.polyline([points[i], points[j]], {
-          color: 'blue',
-          weight: 0.5,
-          opacity: 1.0
-        }).addTo(map);
-        allLines.push(line);
-      }
-    }
-    
-    waypointLine = allLines;  // Сохраняем массив линий
-  }
+  mission = m;
+  waypointMarkers?.createWaypoints(mission);
 }
   
   function centerOnDrone() {
@@ -264,7 +149,6 @@ const marker = L.marker([wp.lat, wp.lon], { icon: customIcon })
 
 <div class="drone-map">
   <div class="map-container" bind:this={mapContainer}>
-    <DroneMarker bind:droneMarker {map} center={config.center} />
   </div>
   <div class="controls">
     <button on:click={centerOnDrone} title="Center on drone">

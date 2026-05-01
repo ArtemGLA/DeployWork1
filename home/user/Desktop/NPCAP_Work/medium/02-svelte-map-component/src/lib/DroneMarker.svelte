@@ -1,34 +1,68 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import droneIconUrl from './icon.png';
+  /**
+   * DroneMarker - иконка дрона учитывающая положение и вращение, а также ошибку вебсокета.
+   */
+  import droneIconUrlGreen from './icon.png';
+  import droneIconUrlRed from './iconRed.png';
+  import type { DronePosition } from './types';
   
+  export let L: any;
   export let map: any;
   export let center: [number, number];
-  export let droneMarker: any = null;
+  export let position: DronePosition | null = null;
   
-  let markerCreated = false;
+  let droneMarker: any = null;
+
+let droneIconGreen: any;
+let droneIconRed: any;
   
-  function createMarker() {
-    if (!map || markerCreated) return;
+  async function init() {
+    await import('leaflet-rotatedmarker');
     
-    (async () => {
-      const L = await import('leaflet');
-      await import('leaflet-rotatedmarker');
-      
-      const droneIcon = L.icon({
-        iconUrl: droneIconUrl,
-        rotationOrigin: "center center",
-        rotationAngle: 45,
-        iconSize: [40, 40],
-        iconAnchor: [20, 20]
-      });
-      
-      droneMarker = L.marker(center, { icon: droneIcon }).addTo(map);
-      markerCreated = true;
-    })();
+  droneIconGreen = L.icon({
+    iconUrl: droneIconUrlGreen,
+    iconSize: [40, 40],
+    iconAnchor: [20, 20]
+  });
+  
+  droneIconRed = L.icon({
+    iconUrl: droneIconUrlRed,
+    iconSize: [40, 40],
+    iconAnchor: [20, 20]
+  });
+    
+    droneMarker = L.marker([center[0], center[1]], { 
+      icon: droneIconGreen,
+      rotationAngle: 0,
+      rotationOrigin: 'center center'
+    }).addTo(map);
+    
+    if (position) setPosition(position);
   }
   
-  $: if (map) {
-    createMarker();
+  export function setPosition(newPosition: DronePosition) {
+    position = newPosition;
+    if (droneMarker && position) {
+      droneMarker.setLatLng([position.lat, position.lon]);
+      droneMarker.setRotationAngle(position.heading);
+    }
   }
+  
+  export function remove() {
+    if (droneMarker && map) map.removeLayer(droneMarker);
+  }
+
+export function error() {
+  if (droneMarker) {
+    droneMarker.setIcon(droneIconRed);  // просто меняем иконку
+  }
+}
+
+export function open() {
+  if (droneMarker) {
+    droneMarker.setIcon(droneIconGreen);  // просто меняем иконку
+  }
+}
+  
+  init();
 </script>

@@ -5,8 +5,9 @@
 #include <QAbstractTableModel>
 
 enum ParameterRoles {
-    ParamMinRole = Qt::UserRole + 1,
-    ParamMaxRole
+    ParamIncrement = Qt::UserRole + 3,
+    ParamMinRole = Qt::UserRole + 2,
+    ParamMaxRole = Qt::UserRole + 1
 };
 
 class ParameterModel : public QAbstractTableModel {

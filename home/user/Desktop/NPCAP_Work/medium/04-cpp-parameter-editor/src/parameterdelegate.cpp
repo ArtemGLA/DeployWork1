@@ -16,6 +16,9 @@ QWidget* ParameterDelegate::createEditor(QWidget *parent, const QStyleOptionView
     // Получаем мин/макс из модели
     double minVal = index.data(ParamMinRole).toDouble();
     double maxVal = index.data(ParamMaxRole).toDouble();
+    double increment = index.data(ParamIncrement).toDouble();
+
+    qDebug() << increment;
     
     QDoubleSpinBox *spinBox = new QDoubleSpinBox(parent);
     if (minVal != 0 || maxVal != 0) {  // Если есть ограничения
@@ -24,9 +27,9 @@ QWidget* ParameterDelegate::createEditor(QWidget *parent, const QStyleOptionView
         spinBox->setRange(-999999, 999999);  // Дефолтный диапазон
     }
 
-    spinBox->setSingleStep(0.01);
+    spinBox->setSingleStep(increment);
 
-    spinBox->setDecimals(3); 
+    spinBox->setDecimals(4); 
     
     return spinBox;
 }

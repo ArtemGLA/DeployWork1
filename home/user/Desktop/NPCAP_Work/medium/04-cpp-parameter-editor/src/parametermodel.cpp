@@ -28,7 +28,8 @@ QVariant ParameterModel::data(const QModelIndex &index, int role) const {
         if (!index.isValid())
         return QVariant();
     
-    // Для кастомных ролей
+    // Поиск минимума и максимума 
+    // TODO: переделать param.displayName == paramName
     if (role == ParamMinRole || role == ParamMaxRole) {
         if (index.column() == 1) {  // Только для колонки Value
             QString paramName = m_values.keys()[index.row()];
@@ -37,6 +38,21 @@ QVariant ParameterModel::data(const QModelIndex &index, int role) const {
                 if (param.displayName == paramName) {
                     if (role == ParamMinRole) return param.minValue;
                     else return param.maxValue;
+                }
+            }
+        }
+        return QVariant();
+    }
+
+    // Поиск инкремента
+    // TODO: переделать param.displayName == paramName
+    if (role == ParamIncrement) {
+        if (index.column() == 1) {  // Только для колонки Value
+            QString paramName = m_values.keys()[index.row()];
+            // Ищем параметр в m_subgroupCurrent
+            for (const auto& param : m_subgroupCurrent.parameters) {
+                if (param.displayName == paramName) {
+                    return param.increment;
                 }
             }
         }

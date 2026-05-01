@@ -209,6 +209,9 @@ def optimize_route(waypoints: list[dict],
     
     # Оригинальная длина
     original_distance = route_distance(original_route, distance_matrix)
+
+    if method == None:
+        method = "greedy"
     
     # Оптимизация
     if method == "greedy":
